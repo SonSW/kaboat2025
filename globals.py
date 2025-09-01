@@ -1,5 +1,5 @@
 LIDAR_PORT = "/dev/ttyUSB0"
-IMU_PORT = "/dev/ttyACM0"
+IMU_PORT = "/dev/ttyACM1"
 ARDUINO_PORT = '/dev/ttyUSB0'
 
 LIDAR_BAUDRATE = 512000

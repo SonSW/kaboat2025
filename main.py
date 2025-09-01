@@ -11,7 +11,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 from globals import *
-from gps import GPSRTK
+# from gps import GPSRTK
 from imu import IMU
 from lidar import Lidar
 from preprocessing import lidar_transform, convert_coord_to_pixel
@@ -53,7 +53,7 @@ cv2.resizeWindow('Live LIDAR Map', MAP_SIZE * 3, MAP_SIZE * 3)
 # 장치들 세팅
 lidar = Lidar(LIDAR_PORT, LIDAR_BAUDRATE, rmax=LIDAR_RMAX)
 imu = IMU(IMU_PORT, IMU_BAUDRATE, virtual=False)
-gpsrtk = GPSRTK()  # TODO
+# gpsrtk = GPSRTK()  # TODO
 arduino_serial = serial.Serial(ARDUINO_PORT, ARDUINO_BAUDRATE)
 
 grid_map = np.zeros(MAP_SHAPE)
@@ -105,10 +105,11 @@ try:
 
         # Grid & Goal 파트.
         # 1) 화면에 표시할 grid map을 만든다.
-        grid_map = lidar.get_grid(MAP_SIZE, pitch, roll)
+        grid_map = lidar.get_grid(MAP_SIZE, -compass_angle + np.pi / 2, pitch, roll)
         obs_pixels = np.argwhere(grid_map > 0)
 
-        ship_origin_abscoord = gpsrtk.get_xy_coord()
+        # ship_origin_abscoord = gpsrtk.get_xy_coord()
+        ship_origin_abscoord = np.array([0, 0])
         goal_pixel = convert_coord_to_pixel(
             lidar_transform(GOAL_ABSCOORD - ship_origin_abscoord, -compass_angle + np.pi / 2, pitch, roll),
             MAP_SIZE, lidar.rmax, do_clip=False)
@@ -148,6 +149,9 @@ try:
             forward_indicator_point = 10 * np.array([np.cos(vfh_result_angle), np.sin(vfh_result_angle)])
             forward_indicator_point += np.array([MAP_SIZE / 2, MAP_SIZE / 2])
 
+            _draw_square(img, round(kn_point[0]), round(kn_point[1]), 3, (111, 113, 252))
+            _draw_square(img, round(kf_point[0]), round(kf_point[1]), 3, (252, 111, 111))
+
         # Vis
         _draw_square(img, MAP_SIZE // 2, MAP_SIZE // 2, 5, (0, 255, 0))
         if is_safe:
@@ -156,7 +160,7 @@ try:
             _draw_square(img, goal_pixel[0], goal_pixel[1], 5, (255, 0, 0))
 
         # Arduino
-        arduino_serial.write()
+        # arduino_serial.write()
 
         cv2.imshow('Live LIDAR Map', img)
         if cv2.waitKey(1) & 0xFF == ord('q'):

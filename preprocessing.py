@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def lidar_transform(coords: np.ndarray, yaw, pitch, roll) -> np.ndarray:
+def lidar_transform(coords: np.ndarray, yaw, pitch, roll, dont_rotate=False) -> np.ndarray:
     is_single_vec = coords.ndim == 1
     if is_single_vec:
         coords = coords.reshape(1, -1)
@@ -10,6 +10,10 @@ def lidar_transform(coords: np.ndarray, yaw, pitch, roll) -> np.ndarray:
     result = (yaw_mat @ coords.T).T
     cos_tilt_angle = abs(np.cos(pitch) * np.cos(roll))
     result[:, 0] *= cos_tilt_angle
+
+    if dont_rotate:
+        inv_yaw_mat = np.array([[np.cos(yaw), np.sin(yaw)], [-np.sin(yaw), np.cos(yaw)]])
+        result = (inv_yaw_mat @ result.T).T
 
     if is_single_vec:
         return result[0]

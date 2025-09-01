@@ -35,7 +35,7 @@ class Lidar:
         points = self.scan.points
 
         ranges = np.fromiter((p.range for p in points), np.float32)
-        angles = np.fromiter((p.angle for p in points), np.float32)
+        angles = -np.fromiter((p.angle for p in points), np.float32)
 
         coords = np.column_stack((ranges * np.cos(angles), ranges * np.sin(angles)))
         coords = coords[ranges <= self.rmax]
@@ -45,17 +45,18 @@ class Lidar:
         else:
             return coords
 
-    def get_grid(self, map_size: int, pitch: float, roll: float):
+    def get_grid(self, map_size: int, yaw: float, pitch: float, roll: float):
         """
         한 변의 길이가 map_size인 맵을 구한다.
         맵의 각 칸은 0 또는 1. (1이 장애물)
 
         :param map_size: 정사각형 grid의 한 변의 길이
+        :param yaw
         :param pitch: pitch (radian)
         :param roll: roll (radian)
         :return: map_size x map_size array
         """
-        scaled_coords = lidar_transform(self.get_coords(), 0, pitch, roll)
+        scaled_coords = lidar_transform(self.get_coords(), yaw, pitch, roll, dont_rotate=True)
         scaled_coords[:, 0] *= map_size / (2 * self.rmax)
         scaled_coords[:, 1] *= map_size / (2 * self.rmax)
         scaled_coords += np.array((map_size / 2, map_size / 2))
