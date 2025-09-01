@@ -45,18 +45,17 @@ class Lidar:
         else:
             return coords
 
-    def get_grid(self, map_size: int, yaw: float, pitch: float, roll: float):
+    def get_grid(self, map_size: int, pitch: float, roll: float):
         """
         한 변의 길이가 map_size인 맵을 구한다.
         맵의 각 칸은 0 또는 1. (1이 장애물)
 
         :param map_size: 정사각형 grid의 한 변의 길이
-        :param yaw: yaw (radian)
         :param pitch: pitch (radian)
         :param roll: roll (radian)
         :return: map_size x map_size array
         """
-        scaled_coords = lidar_transform(self.get_coords(), yaw, pitch, roll)
+        scaled_coords = lidar_transform(self.get_coords(), 0, pitch, roll)
         scaled_coords[:, 0] *= map_size / (2 * self.rmax)
         scaled_coords[:, 1] *= map_size / (2 * self.rmax)
         scaled_coords += np.array((map_size / 2, map_size / 2))

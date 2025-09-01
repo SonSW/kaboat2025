@@ -6,8 +6,8 @@ def lidar_transform(coords: np.ndarray, yaw, pitch, roll) -> np.ndarray:
     if is_single_vec:
         coords = coords.reshape(1, -1)
 
-    yaw_mat = np.array([[np.cos(yaw), -np.sin(yaw)], [np.sin(yaw), np.cos(yaw)]])  # -yaw 일수도있음;;
-    result = coords @ yaw_mat.T  # = (yaw_mat @ coords.T).T
+    yaw_mat = np.array([[np.cos(yaw), -np.sin(yaw)], [np.sin(yaw), np.cos(yaw)]])
+    result = (yaw_mat @ coords.T).T
     cos_tilt_angle = abs(np.cos(pitch) * np.cos(roll))
     result[:, 0] *= cos_tilt_angle
 

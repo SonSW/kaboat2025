@@ -105,7 +105,7 @@ try:
 
         # Grid & Goal 파트.
         # 1) 화면에 표시할 grid map을 만든다.
-        grid_map = lidar.get_grid(MAP_SIZE, -compass_angle + np.pi / 2, pitch, roll)
+        grid_map = lidar.get_grid(MAP_SIZE, pitch, roll)
         obs_pixels = np.argwhere(grid_map > 0)
 
         ship_origin_abscoord = gpsrtk.get_xy_coord()
@@ -131,8 +131,10 @@ try:
 
         # Guidance
         is_goal_near = (0 <= goal_pixel[0] < MAP_SHAPE[0]) and (0 <= goal_pixel[1] < MAP_SHAPE[1])
-        if is_goal_near and np.all(
-                ~in_my_way_mask(obs_pixels, safe_dist_pixels=10, goal=goal_pixel, origin=SHIP_ORIGIN_PIXEL)):  # 쭉 가면 됨
+        no_obstacles_in_way = np.all(
+            ~in_my_way_mask(obs_pixels, safe_dist_pixels=10, goal=goal_pixel, origin=SHIP_ORIGIN_PIXEL))
+
+        if is_goal_near and no_obstacles_in_way:  # 쭉 가면 됨
             forward_indicator_point = 10 * (goal_pixel - SHIP_ORIGIN_PIXEL) / np.linalg.norm(
                 goal_pixel - SHIP_ORIGIN_PIXEL)
             forward_indicator_point += np.array([MAP_SIZE / 2, MAP_SIZE / 2])
