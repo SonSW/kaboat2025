@@ -1,0 +1,9 @@
+LIDAR_PORT = "/dev/ttyUSB0"
+IMU_PORT = "/dev/ttyACM0"
+ARDUINO_PORT = '/dev/ttyUSB0'
+
+LIDAR_BAUDRATE = 512000
+IMU_BAUDRATE = 115200
+ARDUINO_BAUDRATE = 9600
+
+MSCL_PACKAGE_PATH = "/usr/lib/python3.13/dist-packages/"
