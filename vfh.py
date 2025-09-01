@@ -4,21 +4,27 @@ import matplotlib
 from scipy.signal import savgol_filter
 from typing import Tuple
 
-def _angle_difference(angle1, angle2):
-    tmp = abs(angle1 - angle2) % (2*np.pi)
-    return min(tmp, 2*np.pi - tmp)
+
+def _angle_difference(angle1, angle2) -> float:
+    """
+    :param angle1: radian
+    :param angle2: radian
+    :return: 두 각의 차이
+    """
+    tmp = abs(angle1 - angle2) % (2 * np.pi)
+    return min(tmp, 2 * np.pi - tmp)
 
 
-def _middle_section(a, b, bins):
-    mid = (a+b)//2 % bins
-    cand = (a+b+bins)//2 % bins
-    if min(abs(a-mid), abs(b-mid)) > min(abs(a-cand), abs(b-cand)):
+def _middle_section(a, b, bins) -> int:
+    mid = (a + b) // 2 % bins
+    cand = (a + b + bins) // 2 % bins
+    if min(abs(a - mid), abs(b - mid)) > min(abs(a - cand), abs(b - cand)):
         mid = cand
     return mid
 
 
 def vfh(grid: np.ndarray, target_angle: float,
-        threshold: int = 1, smax: int = 80//4,
+        threshold: int = 1, smax: int = 80 // 4,
         bins: int = 80) -> Tuple[np.ndarray, float, float, float, bool]:
     theta_interval = (2 * np.pi) / bins
     bin_centers = []
@@ -28,18 +34,19 @@ def vfh(grid: np.ndarray, target_angle: float,
 
     obstacle_pixels = np.argwhere(grid > 0)
     if obstacle_pixels.size == 0:
-        return np.zeros((bins,)), 0, bin_centers[((-smax+bins)//2)%bins], bin_centers[((smax+bins)//2)%bins], True
+        return np.zeros((bins,)), 0, bin_centers[((-smax + bins) // 2) % bins], bin_centers[
+            ((smax + bins) // 2) % bins], True
     rel_obs = obstacle_pixels - origin
     dists = np.linalg.norm(rel_obs, axis=1)
 
     angles = np.arctan2(rel_obs[:, 1], rel_obs[:, 0])
 
     danger = np.zeros((bins,))
-    dist_max = np.sqrt(grid.shape[0]**2 + grid.shape[1]**2)
+    dist_max = np.sqrt(grid.shape[0] ** 2 + grid.shape[1] ** 2)
     for dist, angle in zip(dists, angles):
         q = (angle + np.pi) / theta_interval
         # danger[max(0, min(bins - 1, round(q)))] += 1 - dist / dist_max
-        danger[max(0, min(bins - 1, round(q)))] += 100 / (dist**(3/2))
+        danger[max(0, min(bins - 1, round(q)))] += 100 / (dist ** (3 / 2))
     danger = savgol_filter(danger, 5, 2)
 
     under_thre = danger < threshold
@@ -70,7 +77,7 @@ def vfh(grid: np.ndarray, target_angle: float,
         else:
             i += 1
     if all_safe:
-        return danger, 0, bin_centers[((-smax+bins)//2)%bins], bin_centers[((smax+bins)//2)%bins], True
+        return danger, 0, bin_centers[((-smax + bins) // 2) % bins], bin_centers[((smax + bins) // 2) % bins], True
 
     kn = bins // 2  # TODO
     min_angle_diff = float('inf')

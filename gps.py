@@ -3,6 +3,7 @@ import threading
 import time
 import traceback
 
+import numpy as np
 import serial
 from pynmeagps import SocketWrapper
 from pyubx2 import (
@@ -71,19 +72,14 @@ class GPSRTK:
 
         return lat, lon, last_measure_time
 
-    def get_xy_coord(self, lat=None, lon=None) -> np.ndarray:
-        """
-        
-
-        :param lat:
-        :param lon:
-        :return:
-        """
+    def get_xy_coord(self, lat=None, lon=None) -> Optional[np.ndarray]:
+        # TODO
+        """초기 위도/경도를 가지고, x좌표와 y좌표를 구한다."""
         with self.lock_latlon:
             init_lat, init_lon = self.init_lat, self.init_lon
 
         if init_lat is None or init_lon is None:
-            return None, None
+            return None  # TODO: 이러면 안 좋을듯..
         if lat is None or lon is None:
             lat, lon, _ = self.get_lat_lon()
 
@@ -120,6 +116,7 @@ class GPSRTK:
             break
 
     def _pump_rtcm_to_receiver(self):
+        # 나도 잘 모름
 
         def __gga_pusher():
             while True:
@@ -153,6 +150,8 @@ class GPSRTK:
                 time.sleep(0.2)
 
     def _update_lat_lon(self):
+        """self.lat과 self.lon을 실시간으로 업데이트."""
+
         ubr = UBXReader(
             self.ser,
             protfilter=NMEA_PROTOCOL | UBX_PROTOCOL | RTCM3_PROTOCOL,
@@ -167,6 +166,7 @@ class GPSRTK:
                 qual = int(getattr(parsed_data, 'quality', '0'))
                 # status = {0: "NO FIX", 1: "GPS", 2: "DGNSS", 4: "RTK FIX", 5: "RTK FLOAT", 6: "DR"}.get(qual, str(qual))
 
+                # 만약 RTK FLOAT 또는 RTK FIX라면
                 if qual in (4, 5):
                     with self.lock_latlon:
                         self.lat = parsed_data.lat

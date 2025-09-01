@@ -59,6 +59,8 @@ arduino_serial = serial.Serial(ARDUINO_PORT, ARDUINO_BAUDRATE)
 grid_map = np.zeros(MAP_SHAPE)
 
 
+# =================================================================================
+
 def _draw_square(img, x, y, size, color):
     """img의 x, y 위치에 한 변의 길이가 size이고 색깔이 color인 정사각형을 그림"""
     sh0, sh1, _ = img.shape
@@ -76,8 +78,7 @@ def in_my_way_mask(pixels: np.ndarray, safe_dist_pixels: float, goal: np.ndarray
     goal_vec = (goal - origin).reshape(1, -1)
     mat = np.eye(2) - (goal_vec.T @ goal_vec) / (np.linalg.norm(goal_vec) ** 2)
     mask = np.linalg.norm((mat @ (pixels - origin).T).T, axis=1) <= safe_dist_pixels
-    tmp = np.dot(pixels - origin, goal - origin) > 0
-    mask &= tmp
+    mask &= np.dot(pixels - origin, goal - origin) > 0
     return mask
 
 
